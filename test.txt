@@ -1,0 +1,27 @@
+player:
+    send to player
+    {"action": "round_started"} when: round_starts do: change to send answer screen
+
+    send to player
+    {"action": "round_ended"} when: round_ends do: change to waiting for equation screen
+
+    send to player
+    {"action": "game_ended"} when: game_ends do: change to final score screen
+
+    send to player
+    {"action": "game_started"} when: game_starts do: change to waiting for equation screen
+
+    recive from player
+    {"answer": answer, "time_took": time_took} when: player_sends_answer do: store answer
+
+host: 
+    send to host
+    {"action": "display_equation", "equation": "equation"} when: round_starts do: a timer for equation display
+
+    send to host
+    {"action": "display_round_stats", "stats": {"player": score, "player": score}} when: round_ends do: display round scores
+
+    recive from host
+    {"action": "displayed_equation"} when: host displayed equation do: send start to players
+
+content: "arithmetic: (easy, medium, hard), algebra(easy, medium, hard)"
