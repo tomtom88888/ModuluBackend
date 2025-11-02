@@ -1,68 +1,157 @@
 import random
 
+
+def generate_quadratic_algebra(difficulty):
+    pass
+
+def generate_algebra(difficulty):
+    pass
+
+def generate_long_division(difficulty):
+    if difficulty == "easy":
+        first_num_range = list(range(1, 100))
+        second_num_range = first_num_range * list(range(10, 50))
+    elif difficulty == "medium":
+        first_num_range = list(range(1, 999))
+        second_num_range = first_num_range * list(range(10, 100))
+    elif difficulty == "hard":
+        first_num_range = list(range(1, 999))
+        second_num_range = first_num_range * list(range(10, 500))
+    problem = str(first_num_range) + "/" + str(second_num_range)
+    return problem, eval(problem)
+
+def generate_long_multiplication(difficulty):
+    if difficulty == "easy":
+        first_num_range = list(range(1, 100))
+        second_num_range = list(range(1, 100))
+    elif difficulty == "medium":
+        first_num_range = list(range(1, 999))
+        second_num_range = list(range(1, 100))
+    elif difficulty == "hard":
+        first_num_range = list(range(1, 999))
+        second_num_range = list(range(1, 999))
+    problem = str(first_num_range) + "*" + str(second_num_range)
+    return problem, eval(problem)
+    
 def generate_arithmetic(difficulty="easy"):
     if difficulty == "easy":
-        num_count = random.randint(2, 3)
-        num_range = list(range(1, 11))
+        num_count = random.randint(3, 4)
+        norm_num_range = list(range(1, 11))
+        mult_num_range = list(range(1, 4))
         ops_allowed = ["+", "-"]
+        max_mult_in_a_row = 1
     elif difficulty == "medium":
-        num_count = random.randint(3, 5)
-        num_range = list(range(1, 51))
-        ops_allowed = ["+", "-", "*", "/"]
-    else:  # hard
         num_count = random.randint(4, 6)
-        num_range = list(range(1, 101))
+        norm_num_range = list(range(1, 51))
+        mult_num_range = list(range(1, 11))
+        ops_allowed = ["+", "-", "*"]
+        max_mult_in_a_row = 2
+    else:
+        num_count = random.randint(5, 7)
+        norm_num_range = list(range(1, 101))
+        mult_num_range = list(range(1, 21))
         ops_allowed = ["+", "-", "*", "/"]
+        max_mult_in_a_row = 2
 
-    ops = [random.choice(ops_allowed) for _ in range(num_count - 1)]
-    expr_parts = [str(random.choice(num_range))]
+    while True:
+        divison_in = False
+        mult_in_a_row = 0
+        ops = []
 
-    for op in ops:
-        if op == "*":
-            next_num = random.choice(num_range[:max(1, len(num_range)//5)])
-            expr_parts.append("*")
-            expr_parts.append(str(next_num))
+        for _ in range(num_count - 1):
+            if divison_in:
+                current_ops_allowed = ops_allowed.copy()
+                if "/" in current_ops_allowed:
+                    current_ops_allowed.remove("/")
 
-        elif op == "/":
-            if difficulty in ["easy", "medium"]:
-                divisor = random.randint(2, 10)
-                k = random.randint(1, 10)
-                numerator = divisor * k
-                expr_parts[-1] = str(numerator)
-                expr_parts.append("/")
-                expr_parts.append(str(divisor))
+                op = random.choice(current_ops_allowed)
+                divison_in = False
+                mult_in_a_row = 0 if op != "*" else 1
+                ops.append(op)
 
-            else:  # hard
-                divisor = random.choice([2, 3])
-                k = random.randint(1, 10)
-                # choose whole, half, or third
-                if divisor == 2:
-                    numerator = 2 * k + random.choice([0, 1])  # whole or half
+            else:
+                current_ops_allowed = ops_allowed.copy()
+
+                if mult_in_a_row >= max_mult_in_a_row:
+                    if "*" in current_ops_allowed:
+                        current_ops_allowed.remove("*")
+
+                op = random.choice(current_ops_allowed)
+
+                if op == "*":
+                    mult_in_a_row += 1
                 else:
-                    numerator = 3 * k + random.choice([0, 1, 2])  # whole, 1/3, or 2/3
-                expr_parts[-1] = str(numerator)
-                expr_parts.append("/")
+                    mult_in_a_row = 0
+
+                if op == "/":
+                    divison_in = True
+
+                ops.append(op)
+
+        expr_parts = []
+        is_division = False
+        is_mult = False
+        divisor = 0
+
+        for op in ops:
+            if is_division:
                 expr_parts.append(str(divisor))
+                expr_parts.append(op)
+                is_division = False
+                continue
 
-        elif op == "+":
-            expr_parts.append("+")
-            expr_parts.append(str(random.choice(num_range)))
+            if op == "/":
+                is_division = True
+                is_mult = False
+                divisor = random.choice(mult_num_range)
+                num = divisor * random.choice(mult_num_range)
+                expr_parts.append(str(num))
+                expr_parts.append(op)
 
-        elif op == "-":
-            expr_parts.append("-")
-            expr_parts.append(str(random.choice(num_range)))
+            elif op == "*":
+                is_mult = True
+                num = random.choice(mult_num_range)
+                expr_parts.append(str(num))
+                expr_parts.append(op)
 
-    expr = "".join(expr_parts)
-    try:
+            elif op in ["+", "-"]:
+                if is_mult:
+                    num = random.choice(mult_num_range)
+                else:
+                    num = random.choice(norm_num_range)
+                is_mult = False
+                expr_parts.append(str(num))
+                expr_parts.append(op)
+
+        if is_mult:
+            num = random.choice(mult_num_range)
+            expr_parts.append(str(num))
+        elif is_division:
+            expr_parts.append(str(divisor))
+        else:
+            num = random.choice(norm_num_range)
+            expr_parts.append(str(num))
+
+        expr = "".join(expr_parts)
         answer = eval(expr)
-    except ZeroDivisionError:
-        return generate_arithmetic(difficulty)
 
-    return expr, answer
+        if answer < 0:
+            continue
 
+        return expr, answer
+    
 
-# Demo
-for level in ["easy", "medium", "hard"]:
-    print("\n", level.upper())
-    for _ in range(5):
-        print(generate_arithmetic(level))
+# for i in range(3):
+#     print("Easy Question: ")
+#     equation, answer = generate_arithmetic(difficulty="easy")
+#     print(f"Equation: {equation}, Answer: {answer}")
+
+# for i in range(3):
+#     print("Medium Question: ")
+#     equation, answer = generate_arithmetic(difficulty="medium")
+#     print(f"Equation: {equation}, Answer: {answer}")
+    
+# for i in range(3):
+#     print("Hard Question: ")
+#     equation, answer = generate_arithmetic(difficulty="hard")
+#     print(f"Equation: {equation}, Answer: {answer}")
