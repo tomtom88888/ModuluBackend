@@ -162,7 +162,6 @@ class Match:
 
         while current_status != "game_ended":
             if current_status == "waiting_for_round_start":
-                await  asyncio.sleep(5)
                 current_status = await self.handle_round_start()
                 
             elif current_status == "waiting_for_host":
@@ -172,8 +171,6 @@ class Match:
                 # round_end handled in host phase
                 pass
             
-            round_index += 1
-
 
         winner = max(self.players, key=lambda p: p.score)
         return winner
@@ -280,6 +277,7 @@ class Match:
     async def round_end_phase(self, scores):
         await self.broadcast_round_data()
         await self.host.send_data({"state": "round_ended", "stats": scores})
+        await  asyncio.sleep(5)
         
     async def broadcast_round_data(self):
         await asyncio.gather(*(p.send_data({"state": "round_ended", "score": p.score, "place": p.place }) for p in self.players))
