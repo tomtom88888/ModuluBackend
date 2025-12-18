@@ -1,0 +1,36 @@
+player:
+    send to player
+    {"state": "game_info", "max_houses": max_houses, "time_per_question" : tpq, "max_rounds": 5} when: waiting for host, do: change to waiting for equation
+
+    send to player
+    {"state": "preparing_round"} when: waiting for host, do: change to waiting for equation
+
+    send to player
+    {"state": "round_ongoing"} when: round starts, do: change to submit answer screen
+
+    send to player
+    {"state": "round_stats"} when: round scores, do: change to round_stats
+
+    send to player
+    {"state": "game_over"} when: game over do: change to final score screen
+
+    recive from player
+    {"state": "answer_submitted", "time_took": time_took} when: player sends answer do: store answer
+
+host: 
+    send to host
+    {"state": "prep_round", "equation": "equation"} when: round starts do: a timer for equation display
+
+    send to host
+    {"state": "prep_game", "players": ["player", "player", "player"]} when: preperaing for game do: chagne to players playing screen
+
+    send to host
+    {"state": "round_stats", "stats": {"player": score, "player": score}} when: round ends do: display round scores
+    
+    send to host
+    {"state": "game_over", "stats": {"player": score, "player": score}} when: game ends do: display round scores
+
+    recive from host
+    {"state": "round_ongoing"} when: host displayed equation do: send start to players
+
+content: "arithmetic: (easy, medium, hard), algebra(easy, medium, hard)"

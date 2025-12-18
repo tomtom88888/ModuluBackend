@@ -1,3 +1,2 @@
-t = None
-if t:
-    print("ayay")
+t = ["1", "2"]
+print(t[:3])
